@@ -19,6 +19,36 @@ def check_intervals(intervals, parents, parents_phenotype, n):
     return _max_children
 
 
+def array_sort(new_pokolenya, new_pokolenya_phenotypes, new_pokolenya_fitness):
+    for i in range(len(new_pokolenya_fitness)):
+        for j in range(0, len(new_pokolenya_fitness) - i - 1):
+            if new_pokolenya_fitness[j] > new_pokolenya_fitness[j + 1]:
+                temp1 = new_pokolenya_fitness[j]
+                new_pokolenya_fitness[j] = new_pokolenya_fitness[j + 1]
+                new_pokolenya_fitness[j + 1] = temp1
+
+                temp = new_pokolenya[j]
+                new_pokolenya[j] = new_pokolenya[j + 1]
+                new_pokolenya[j + 1] = temp
+
+                temp2 = new_pokolenya_phenotypes[j]
+                new_pokolenya_phenotypes[j] = new_pokolenya_phenotypes[j + 1]
+                new_pokolenya_phenotypes[j + 1] = temp2
+
+    return new_pokolenya[0:len(new_pokolenya) // 2], new_pokolenya_phenotypes[
+                                                     0:len(new_pokolenya_phenotypes) // 2], new_pokolenya_fitness[0:len(
+        new_pokolenya_fitness) // 2]
+
+
+def best_child(new_pokolenya):
+    _min = sys.maxsize
+    for i in range(len(new_pokolenya)):
+        if sum(new_pokolenya[i]) < _min:
+            _min = sum(new_pokolenya[i])
+
+    return _min
+
+
 def search_best_individual(all_childrens):
     _min_value = sys.maxsize
     for i in range(len(all_childrens)):
@@ -107,126 +137,127 @@ best_individual = search_best_individual(all_children)
 print(f"Лучшая особь: {best_individual}")
 
 counter = 0
+counter_pokolenyi = 0
 pokoleniye = 0
 print("##########################################CROSSOVER##########################################")
+new_pokolenya = []
+new_pokolenya_phenotypes = []
+new_pokolenya_fitness = []
 while counter < z:
-    first_individual = parents[random.randint(0, n - 1)]
-    second_individual = parents[random.randint(0, n - 1)]
 
-    while first_individual == second_individual:
+    while len(new_pokolenya) < (k * 2):
         first_individual = parents[random.randint(0, n - 1)]
         second_individual = parents[random.randint(0, n - 1)]
-    if random.randint(0, 100) <= Pk:
-        first_phenotypes = parents_phenotypes[parents.index(first_individual)]
-        second_phenotypes = parents_phenotypes[parents.index(second_individual)]
-        print(f"1 особь(O{parents.index(first_individual) + 1}): {first_individual}")
-        print(f"2 особь(O{parents.index(second_individual) + 1}): {second_individual}")
-        crossover_ind_1 = random.randint(1, m - 3)
-        crossover_ind_2 = random.randint(crossover_ind_1 + 1, m - 1)
 
-        print(f"Индекс кроссовера 1: {crossover_ind_1}")
-        print(f"Индекс кроссовера 2: {crossover_ind_2}")
+        while first_individual == second_individual:
+            first_individual = parents[random.randint(0, n - 1)]
+            second_individual = parents[random.randint(0, n - 1)]
+        if random.randint(0, 100) <= Pk:
+            first_phenotypes = parents_phenotypes[parents.index(first_individual)]
+            second_phenotypes = parents_phenotypes[parents.index(second_individual)]
+            print(f"1 особь(O{parents.index(first_individual) + 1}): {first_individual}")
+            print(f"2 особь(O{parents.index(second_individual) + 1}): {second_individual}")
+            crossover_ind_1 = random.randint(1, m - 3)
+            crossover_ind_2 = random.randint(crossover_ind_1 + 1, m - 1)
 
-        first_individual_new = first_individual[0:crossover_ind_1] + second_individual[
-                                                                     crossover_ind_1:crossover_ind_2] + first_individual[
-                                                                                                        crossover_ind_2::]
-        second_individual_new = second_individual[0:crossover_ind_1] + first_individual[
-                                                                       crossover_ind_1:crossover_ind_2] + second_individual[
-                                                                                                          crossover_ind_2::]
-        print(f"1 особь: {first_individual_new}")
-        print(f"2 особь: {second_individual_new}")
-        first_individual_new_phenotypes = first_phenotypes[0:crossover_ind_1] + second_phenotypes[
-                                                                                crossover_ind_1:crossover_ind_2] + first_phenotypes[
-                                                                                                                   crossover_ind_2::]
-        second_individual_new_phenotypes = second_phenotypes[0:crossover_ind_1] + first_phenotypes[
-                                                                                  crossover_ind_1:crossover_ind_2] + second_phenotypes[
-                                                                                                                     crossover_ind_2::]
-        print(f"Фенотипы(1): {first_individual_new_phenotypes}")
-        print(f"Фенотипы(2): {second_individual_new_phenotypes}")
-        for _ in range(2):
-            if random.randint(0, 100) <= Pm:
-                phenotype_ind = random.randint(0, len(first_individual_new_phenotypes) - 1)
-                old_phenotype = first_individual_new_phenotypes[phenotype_ind]
-                print(f"Старый фенотип: {old_phenotype}")
-                new_phenotype = invert_random_bit(old_phenotype)
-                print(f"Новый фенотип: {new_phenotype}")
+            print(f"Индекс кроссовера 1: {crossover_ind_1}")
+            print(f"Индекс кроссовера 2: {crossover_ind_2}")
 
-                first_individual_new_phenotypes[phenotype_ind] = new_phenotype
-
-                print(f"Фенотипы: {first_individual_new_phenotypes}")
-
-                new_childrens = check_intervals(intervals, first_individual_new, first_individual_new_phenotypes, n)
-
-                print("ALL - ", new_childrens)
-
-                print(f"O{i + 1} childrens = {new_childrens}, sum = {sum(new_childrens)}")
-
-                if sum(new_childrens) < best_individual:
-                    best_individual = sum(new_childrens)
-                    print(
-                        f"############################НОВАЯ ЛУЧШАЯ ОСОБЬ - {best_individual}############################")
-                    counter = 0
-                    pokoleniye += 1
-                    print(
-                        f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-                    with open("pokoleniya.txt", 'w') as f:
-                        f.write(f"Pokoleniye: {pokoleniye}\n")
-                    continue
-
-                if sum(new_childrens) == best_individual:
-                    counter += 1
-                    print(f"############################COUNTER = {counter}############################")
-
-                    pokoleniye += 1
-                    print(
-                        f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-                    with open("pokoleniya.txt", 'w') as f:
-                        f.write(f"Pokoleniye: {pokoleniye}\n")
-            else:
-                print("############################МУТАЦИЯ НЕ УДАЛАСЯ############################")
-
+            first_individual_new = first_individual[0:crossover_ind_1] + second_individual[
+                                                                         crossover_ind_1:crossover_ind_2] + first_individual[
+                                                                                                            crossover_ind_2::]
+            second_individual_new = second_individual[0:crossover_ind_1] + first_individual[
+                                                                           crossover_ind_1:crossover_ind_2] + second_individual[
+                                                                                                              crossover_ind_2::]
+            print(f"1 особь: {first_individual_new}")
+            print(f"2 особь: {second_individual_new}")
+            first_individual_new_phenotypes = first_phenotypes[0:crossover_ind_1] + second_phenotypes[
+                                                                                    crossover_ind_1:crossover_ind_2] + first_phenotypes[
+                                                                                                                       crossover_ind_2::]
+            second_individual_new_phenotypes = second_phenotypes[0:crossover_ind_1] + first_phenotypes[
+                                                                                      crossover_ind_1:crossover_ind_2] + second_phenotypes[
+                                                                                                                         crossover_ind_2::]
+            print(f"Фенотипы(1): {first_individual_new_phenotypes}")
+            print(f"Фенотипы(2): {second_individual_new_phenotypes}")
             for _ in range(2):
                 if random.randint(0, 100) <= Pm:
-                    phenotype_ind = random.randint(0, len(second_individual_new_phenotypes) - 1)
-                    old_phenotype = second_individual_new_phenotypes[phenotype_ind]
+                    phenotype_ind = random.randint(0, len(first_individual_new_phenotypes) - 1)
+                    old_phenotype = first_individual_new_phenotypes[phenotype_ind]
                     print(f"Старый фенотип: {old_phenotype}")
                     new_phenotype = invert_random_bit(old_phenotype)
                     print(f"Новый фенотип: {new_phenotype}")
 
-                    second_individual_new_phenotypes[phenotype_ind] = new_phenotype
+                    first_individual_new_phenotypes[phenotype_ind] = new_phenotype
 
-                    print(f"Фенотипы: {second_individual_new_phenotypes}")
+                    print(f"Фенотипы: {first_individual_new_phenotypes}")
 
-                    new_childrens = check_intervals(intervals, second_individual_new,
-                                                    second_individual_new_phenotypes,
-                                                    n)
+                    new_pokolenya_fitness.append(
+                        sum(check_intervals(intervals, first_individual_new, first_individual_new_phenotypes, n)))
 
-                    print("ALL - ", new_childrens)
+                    new_pokolenya.append(first_individual_new)
+                    new_pokolenya_phenotypes.append(first_individual_new_phenotypes)
+                    print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ: {new_pokolenya}$$$$$$$$$$$$$$$$$")
 
-                    print(f"O{i + 1} childrens = {new_childrens}, sum = {sum(new_childrens)}")
-
-                    if sum(new_childrens) < best_individual:
-                        best_individual = sum(new_childrens)
-                        print(
-                            f"############################НОВАЯ ЛУЧШАЯ ОСОБЬ - {best_individual}############################")
-                        counter = 0
-                        pokoleniye += 1
-                        print(
-                            f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-                        with open("pokoleniya.txt", 'w') as f:
-                            f.write(f"Pokoleniye: {pokoleniye}\n")
-                        continue
-
-                    if sum(new_childrens) == best_individual:
-                        counter += 1
-                        print(f"############################COUNTER = {counter}############################")
-                        pokoleniye += 1
-                        print(
-                            f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-                        with open("pokoleniya.txt", 'w') as f:
-                            f.write(f"Pokoleniye: {pokoleniye}\n")
+                    # if sum(new_childrens) == best_individual:
+                    #     counter += 1
+                    #     print(f"############################COUNTER = {counter}############################")
+                    #
+                    #     pokoleniye += 1
+                    #     print(
+                    #         f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+                    #     with open("pokoleniya.txt", 'w') as f:
+                    #         f.write(f"Pokoleniye: {pokoleniye}\n")
                 else:
                     print("############################МУТАЦИЯ НЕ УДАЛАСЯ############################")
 
-    else:
-        print("############################КРОССОВЕР НЕ УДАЛСЯ############################")
+                for _ in range(2):
+                    if random.randint(0, 100) <= Pm:
+                        phenotype_ind = random.randint(0, len(second_individual_new_phenotypes) - 1)
+                        old_phenotype = second_individual_new_phenotypes[phenotype_ind]
+                        print(f"Старый фенотип: {old_phenotype}")
+                        new_phenotype = invert_random_bit(old_phenotype)
+                        print(f"Новый фенотип: {new_phenotype}")
+
+                        second_individual_new_phenotypes[phenotype_ind] = new_phenotype
+
+                        print(f"Фенотипы: {second_individual_new_phenotypes}")
+
+                        new_pokolenya_fitness.append(
+                            sum(check_intervals(intervals, second_individual_new, first_individual_new_phenotypes, n)))
+
+                        new_pokolenya.append(second_individual_new)
+                        new_pokolenya_phenotypes.append(first_individual_new_phenotypes)
+                        print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ: {new_pokolenya}$$$$$$$$$$$$$$$$$")
+
+                        # if sum(new_childrens) == best_individual:
+                        #     counter += 1
+                        #     print(f"############################COUNTER = {counter}############################")
+                        #     pokoleniye += 1
+                        #     print(
+                        #         f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+                        #     with open("pokoleniya.txt", 'w') as f:
+                        #         f.write(f"Pokoleniye: {pokoleniye}\n")
+                    else:
+                        print("############################МУТАЦИЯ НЕ УДАЛАСЯ############################")
+
+        else:
+            print("############################КРОССОВЕР НЕ УДАЛСЯ############################")
+    pokoleniye += 1
+    new_pokolenya, new_pokolenya_phenotypes, new_pokolenya_fitness = array_sort(new_pokolenya, new_pokolenya_phenotypes,
+                                                                                new_pokolenya_fitness)
+
+    print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ №{pokoleniye}: {new_pokolenya}$$$$$$$$$$$$$$$$$")
+    print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ ФЕНОТИПЫ №{pokoleniye}: {new_pokolenya_phenotypes}$$$$$$$$$$$$$$$$$")
+    print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ ПРИСПОСОБЛЕННОСТЬ №{pokoleniye}: {new_pokolenya_fitness}$$$$$$$$$$$$$$$$$")
+
+    parents = new_pokolenya
+    parents_phenotypes = new_pokolenya_phenotypes
+    temp = new_pokolenya_fitness[0]
+    print(temp)
+    if temp == best_individual:
+        counter += 1
+        print(f"############################COUNTER = {counter}############################")
+    elif temp < best_individual:
+        counter = 0
+        best_individual = temp
+        print(f"$$$$$$$$$$$$$$$$$НОВЫЙ ЛУЧШИЙ ПОТОМОК: {best_individual}$$$$$$$$$$$$$$$$$")
