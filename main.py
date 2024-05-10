@@ -2,7 +2,7 @@ import random
 import sys
 
 
-def check_intervals(intervals, parents, parents_phenotype, n):
+def check_intervals(intervals, parents, parents_phenotype):
     children_arr = []
     j = 0
     for interval in intervals:
@@ -82,6 +82,7 @@ Pk = int(input("Введите вероятность кроссовера: "))
 Pm = int(input("Введите вероятность мутации: "))
 
 parents = []
+parents_fitness = []
 
 for i in range(k):
     parents.append([])
@@ -128,12 +129,13 @@ for i in range(len(parents)):
 all_children = []
 
 for i in range(k):
-    all_children.append(check_intervals(intervals, parents[i], parents_phenotypes[i], k))
+    all_children.append(check_intervals(intervals, parents[i], parents_phenotypes[i]))
 
 print("ALL - ", all_children)
 
 for i in range(len(all_children)):
     print(f"O{i + 1} childrens = {all_children[i]}, sum = {sum(all_children[i])}")
+    parents_fitness.append(sum(all_children[i]))
 
 best_individual = search_best_individual(all_children)
 
@@ -145,70 +147,100 @@ counter = 0
 counter_pokolenyi = 0
 pokoleniye = 0
 print("##########################################CROSSOVER##########################################")
-new_pokolenya = []
-new_pokolenya_phenotypes = []
-new_pokolenya_fitness = []
+
 while counter < z:
+    new_pokolenya = []
+    new_pokolenya_phenotypes = []
+    new_pokolenya_fitness = []
+    while len(new_pokolenya) < k * 2:
+        first_individual_ind = random.randint(0, len(parents) - 1)
+        second_individual_ind = random.randint(0, len(parents) - 1)
 
-    while len(new_pokolenya) < (k * 2):
-        try:
+        while first_individual_ind == second_individual_ind:
             first_individual_ind = random.randint(0, len(parents) - 1)
-            first_individual = parents[first_individual_ind]
             second_individual_ind = random.randint(0, len(parents) - 1)
-            second_individual = parents[second_individual_ind]
 
-            if first_individual == second_individual:
-                continue
-            if random.randint(0, 100) <= Pk:
-                first_phenotypes = parents_phenotypes[parents.index(first_individual)]
-                second_phenotypes = parents_phenotypes[parents.index(second_individual)]
-                print(f"1 особь(O{parents.index(first_individual) + 1}): {first_individual}")
-                print(f"2 особь(O{parents.index(second_individual) + 1}): {second_individual}")
-                crossover_ind_1 = random.randint(1, m - 3)
-                crossover_ind_2 = random.randint(crossover_ind_1 + 1, m - 1)
+        first_individual = parents[first_individual_ind]
+        second_individual = parents[second_individual_ind]
 
-                print(f"Индекс кроссовера 1: {crossover_ind_1}")
-                print(f"Индекс кроссовера 2: {crossover_ind_2}")
+        if random.randint(0, 100) <= Pk:
+            first_phenotypes = parents_phenotypes[parents.index(first_individual)]
+            second_phenotypes = parents_phenotypes[parents.index(second_individual)]
+            print(f"1 особь(O{parents.index(first_individual) + 1}): {first_individual}")
+            print(f"2 особь(O{parents.index(second_individual) + 1}): {second_individual}")
+            crossover_ind_1 = random.randint(1, m - 3)
+            crossover_ind_2 = random.randint(crossover_ind_1 + 1, m - 1)
 
-                first_individual_new = first_individual[0:crossover_ind_1] + second_individual[
-                                                                             crossover_ind_1:crossover_ind_2] + first_individual[
-                                                                                                                crossover_ind_2::]
-                second_individual_new = second_individual[0:crossover_ind_1] + first_individual[
-                                                                               crossover_ind_1:crossover_ind_2] + second_individual[
-                                                                                                                  crossover_ind_2::]
-                print(f"1 особь: {first_individual_new}")
-                print(f"2 особь: {second_individual_new}")
-                first_individual_new_phenotypes = first_phenotypes[0:crossover_ind_1] + second_phenotypes[
-                                                                                        crossover_ind_1:crossover_ind_2] + first_phenotypes[
-                                                                                                                           crossover_ind_2::]
-                second_individual_new_phenotypes = second_phenotypes[0:crossover_ind_1] + first_phenotypes[
-                                                                                          crossover_ind_1:crossover_ind_2] + second_phenotypes[
-                                                                                                                             crossover_ind_2::]
-                print(f"Фенотипы(1): {first_individual_new_phenotypes}")
-                print(f"Фенотипы(2): {second_individual_new_phenotypes}")
+            print(f"Индекс кроссовера 1: {crossover_ind_1}")
+            print(f"Индекс кроссовера 2: {crossover_ind_2}")
+
+            first_individual_new = first_individual[0:crossover_ind_1] + second_individual[
+                                                                         crossover_ind_1:crossover_ind_2] + first_individual[
+                                                                                                            crossover_ind_2::]
+            second_individual_new = second_individual[0:crossover_ind_1] + first_individual[
+                                                                           crossover_ind_1:crossover_ind_2] + second_individual[
+                                                                                                              crossover_ind_2::]
+            print(f"1 особь: {first_individual_new}")
+            print(f"2 особь: {second_individual_new}")
+            first_individual_new_phenotypes = first_phenotypes[0:crossover_ind_1] + second_phenotypes[
+                                                                                    crossover_ind_1:crossover_ind_2] + first_phenotypes[
+                                                                                                                       crossover_ind_2::]
+            second_individual_new_phenotypes = second_phenotypes[0:crossover_ind_1] + first_phenotypes[
+                                                                                      crossover_ind_1:crossover_ind_2] + second_phenotypes[
+                                                                                                                         crossover_ind_2::]
+            print(f"Фенотипы(1): {first_individual_new_phenotypes}")
+            print(f"Фенотипы(2): {second_individual_new_phenotypes}")
+            for _ in range(2):
+                if random.randint(0, 100) <= Pm:
+                    phenotype_ind = random.randint(0, len(first_individual_new_phenotypes) - 1)
+                    old_phenotype = first_individual_new_phenotypes[phenotype_ind]
+                    print(f"Старый фенотип: {old_phenotype}")
+                    new_phenotype = invert_random_bit(old_phenotype)
+                    print(f"Новый фенотип: {new_phenotype}")
+
+                    first_individual_new_phenotypes[phenotype_ind] = new_phenotype
+
+                    print(f"Фенотипы: {first_individual_new_phenotypes}")
+
+                    new_pokolenya_fitness.append(
+                        sum(check_intervals(intervals, first_individual_new, first_individual_new_phenotypes)))
+
+                    new_pokolenya.append(first_individual_new)
+                    new_pokolenya_phenotypes.append(first_individual_new_phenotypes)
+
+                    # if sum(new_childrens) == best_individual:
+                    #     counter += 1
+                    #     print(f"############################COUNTER = {counter}############################")
+                    #
+                    #     pokoleniye += 1
+                    #     print(
+                    #         f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+                    #     with open("pokoleniya.txt", 'w') as f:
+                    #         f.write(f"Pokoleniye: {pokoleniye}\n")
+                else:
+                    print("############################МУТАЦИЯ НЕ УДАЛАСЯ############################")
+
                 for _ in range(2):
                     if random.randint(0, 100) <= Pm:
-                        phenotype_ind = random.randint(0, len(first_individual_new_phenotypes) - 1)
-                        old_phenotype = first_individual_new_phenotypes[phenotype_ind]
+                        phenotype_ind = random.randint(0, len(second_individual_new_phenotypes) - 1)
+                        old_phenotype = second_individual_new_phenotypes[phenotype_ind]
                         print(f"Старый фенотип: {old_phenotype}")
                         new_phenotype = invert_random_bit(old_phenotype)
                         print(f"Новый фенотип: {new_phenotype}")
 
-                        first_individual_new_phenotypes[phenotype_ind] = new_phenotype
+                        second_individual_new_phenotypes[phenotype_ind] = new_phenotype
 
-                        print(f"Фенотипы: {first_individual_new_phenotypes}")
+                        print(f"Фенотипы: {second_individual_new_phenotypes}")
 
                         new_pokolenya_fitness.append(
-                            sum(check_intervals(intervals, first_individual_new, first_individual_new_phenotypes, n)))
+                            sum(check_intervals(intervals, second_individual_new, first_individual_new_phenotypes)))
 
-                        new_pokolenya.append(first_individual_new)
+                        new_pokolenya.append(second_individual_new)
                         new_pokolenya_phenotypes.append(first_individual_new_phenotypes)
-                        print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ: {new_pokolenya}$$$$$$$$$$$$$$$$$")
 
                         # if sum(new_childrens) == best_individual:
                         #     counter += 1
                         #     print(f"############################COUNTER = {counter}############################")
-                        #
                         #     pokoleniye += 1
                         #     print(
                         #         f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
@@ -217,42 +249,26 @@ while counter < z:
                     else:
                         print("############################МУТАЦИЯ НЕ УДАЛАСЯ############################")
 
-                    for _ in range(2):
-                        if random.randint(0, 100) <= Pm:
-                            phenotype_ind = random.randint(0, len(second_individual_new_phenotypes) - 1)
-                            old_phenotype = second_individual_new_phenotypes[phenotype_ind]
-                            print(f"Старый фенотип: {old_phenotype}")
-                            new_phenotype = invert_random_bit(old_phenotype)
-                            print(f"Новый фенотип: {new_phenotype}")
+        else:
+            print("############################КРОССОВЕР НЕ УДАЛСЯ############################")
 
-                            second_individual_new_phenotypes[phenotype_ind] = new_phenotype
+    new_pokolenya = new_pokolenya[0:k * 2]
+    new_pokolenya_phenotypes = new_pokolenya_phenotypes[0:k * 2]
+    new_pokolenya_fitness = new_pokolenya_fitness[0:k * 2]
 
-                            print(f"Фенотипы: {second_individual_new_phenotypes}")
+    for parent in parents:
+        new_pokolenya.append(parent)
 
-                            new_pokolenya_fitness.append(
-                                sum(check_intervals(intervals, second_individual_new, first_individual_new_phenotypes, n)))
+    for phenotype in parents_phenotypes:
+        new_pokolenya_phenotypes.append(phenotype)
 
-                            new_pokolenya.append(second_individual_new)
-                            new_pokolenya_phenotypes.append(first_individual_new_phenotypes)
-                            print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ: {new_pokolenya}$$$$$$$$$$$$$$$$$")
+    for fitness in parents_fitness:
+        new_pokolenya_fitness.append(fitness)
 
-                            # if sum(new_childrens) == best_individual:
-                            #     counter += 1
-                            #     print(f"############################COUNTER = {counter}############################")
-                            #     pokoleniye += 1
-                            #     print(
-                            #         f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ПОКОЛЕНИЕ - {pokoleniye}@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-                            #     with open("pokoleniya.txt", 'w') as f:
-                            #         f.write(f"Pokoleniye: {pokoleniye}\n")
-                        else:
-                            print("############################МУТАЦИЯ НЕ УДАЛАСЯ############################")
-
-            else:
-                print("############################КРОССОВЕР НЕ УДАЛСЯ############################")
-        except RecursionError:
-            print("Превышено максимальное количество попыток генерации уникальных особей. Продолжаем выполнение.")
-            continue
     pokoleniye += 1
+
+    file.write(f"НОВЫЕ ПОКОЛЕНИЯ ДО СОРТИРОВКИ: {new_pokolenya}, кол-во: {len(new_pokolenya)}\n")
+
     new_pokolenya, new_pokolenya_phenotypes, new_pokolenya_fitness = array_sort(new_pokolenya, new_pokolenya_phenotypes,
                                                                                 new_pokolenya_fitness)
 
@@ -267,7 +283,10 @@ while counter < z:
         f"НОВЫЕ ПОКОЛЕНИЯ ПРИСПОСОБЛЕННОСТЬ №{pokoleniye}: {new_pokolenya_fitness}\n")
 
     parents = new_pokolenya
+
     parents_phenotypes = new_pokolenya_phenotypes
+
+    parents_fitness = new_pokolenya_fitness
     temp = new_pokolenya_fitness[0]
     print(temp)
     if temp == best_individual:
