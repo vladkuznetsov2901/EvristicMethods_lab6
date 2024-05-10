@@ -137,6 +137,9 @@ for i in range(len(all_children)):
     print(f"O{i + 1} childrens = {all_children[i]}, sum = {sum(all_children[i])}")
     parents_fitness.append(sum(all_children[i]))
 
+file.write(
+    f"РОДИТЕЛИ: {parents_fitness}\n")
+
 best_individual = search_best_individual(all_children)
 
 print(f"Лучшая особь: {best_individual}")
@@ -252,9 +255,14 @@ while counter < z:
         else:
             print("############################КРОССОВЕР НЕ УДАЛСЯ############################")
 
+
+
     new_pokolenya = new_pokolenya[0:k * 2]
     new_pokolenya_phenotypes = new_pokolenya_phenotypes[0:k * 2]
     new_pokolenya_fitness = new_pokolenya_fitness[0:k * 2]
+
+    file.write(f"НОВЫЕ ПОКОЛЕНИЯ ДО СОРТИРОВКИ: {new_pokolenya}, кол-во: {len(new_pokolenya)}\n")
+
 
     for parent in parents:
         new_pokolenya.append(parent)
@@ -265,12 +273,15 @@ while counter < z:
     for fitness in parents_fitness:
         new_pokolenya_fitness.append(fitness)
 
-    pokoleniye += 1
-
-    file.write(f"НОВЫЕ ПОКОЛЕНИЯ ДО СОРТИРОВКИ: {new_pokolenya}, кол-во: {len(new_pokolenya)}\n")
 
     new_pokolenya, new_pokolenya_phenotypes, new_pokolenya_fitness = array_sort(new_pokolenya, new_pokolenya_phenotypes,
                                                                                 new_pokolenya_fitness)
+
+    new_pokolenya = new_pokolenya[0:k]
+    new_pokolenya_phenotypes = new_pokolenya_phenotypes[0:k]
+    new_pokolenya_fitness = new_pokolenya_fitness[0:k]
+
+    pokoleniye += 1
 
     print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ №{pokoleniye}: {new_pokolenya}$$$$$$$$$$$$$$$$$")
     print(f"$$$$$$$$$$$$$$$$$НОВЫЕ ПОКОЛЕНИЯ ФЕНОТИПЫ №{pokoleniye}: {new_pokolenya_phenotypes}$$$$$$$$$$$$$$$$$")
