@@ -16,6 +16,8 @@ def check_intervals(intervals, parents, parents_phenotype):
     for i in range(len(children_arr)):
         if sum(children_arr[i]) > sum(_max_children):
             _max_children = children_arr[i]
+
+    print(f"ПРИСПОСОБЛЕННОСТЬ: {sum(_max_children)}")
     return _max_children
 
 
@@ -83,7 +85,10 @@ Pm = int(input("Введите вероятность мутации: "))
 
 parents = []
 parents_fitness = []
+parents_matrix = [[0] * n for i in range(m)]
 
+for row in parents_matrix:
+    print(row)
 for i in range(k):
     parents.append([])
     for j in range(m):
@@ -95,6 +100,14 @@ for row in parents:
     print(f"O{i} = {row}")
     file.write(f"O{i} = {row}\n")
     i += 1
+
+for j in range(n):
+    for i in range(m):
+        parents_matrix[i][j] = parents[j][i]
+
+print("НАЧАЛЬНАЯ МАТРИЦА")
+for row in parents_matrix:
+    print(row)
 
 remainder = int(255 / n)
 print(f"Remainder: {remainder}")
@@ -160,15 +173,14 @@ while counter < z:
         second_individual_ind = random.randint(0, len(parents) - 1)
 
         while first_individual_ind == second_individual_ind:
-            first_individual_ind = random.randint(0, len(parents) - 1)
             second_individual_ind = random.randint(0, len(parents) - 1)
 
         first_individual = parents[first_individual_ind]
         second_individual = parents[second_individual_ind]
-
+        first_phenotypes = parents_phenotypes[parents.index(first_individual)]
+        second_phenotypes = parents_phenotypes[parents.index(second_individual)]
         if random.randint(0, 100) <= Pk:
-            first_phenotypes = parents_phenotypes[parents.index(first_individual)]
-            second_phenotypes = parents_phenotypes[parents.index(second_individual)]
+
             print(f"1 особь(O{parents.index(first_individual) + 1}): {first_individual}")
             print(f"2 особь(O{parents.index(second_individual) + 1}): {second_individual}")
             crossover_ind_1 = random.randint(1, m - 3)
@@ -188,25 +200,43 @@ while counter < z:
             first_individual_new_phenotypes = first_phenotypes[0:crossover_ind_1] + second_phenotypes[
                                                                                     crossover_ind_1:crossover_ind_2] + first_phenotypes[
                                                                                                                        crossover_ind_2::]
+
+            first_individual_new_phenotypes_old = first_individual_new_phenotypes
+
             second_individual_new_phenotypes = second_phenotypes[0:crossover_ind_1] + first_phenotypes[
                                                                                       crossover_ind_1:crossover_ind_2] + second_phenotypes[
                                                                                                                          crossover_ind_2::]
             print(f"Фенотипы(1): {first_individual_new_phenotypes}")
             print(f"Фенотипы(2): {second_individual_new_phenotypes}")
+
+            first_individual_new_fitness = sum(
+                check_intervals(intervals, first_individual, first_phenotypes))
+            second_individual_new_fitness = sum(
+                check_intervals(intervals, second_individual, second_phenotypes))
+
             for _ in range(2):
                 if random.randint(0, 100) <= Pm:
+                    old_fitness = sum(
+                        check_intervals(intervals, first_individual_new, first_individual_new_phenotypes))
                     phenotype_ind = random.randint(0, len(first_individual_new_phenotypes) - 1)
                     old_phenotype = first_individual_new_phenotypes[phenotype_ind]
                     print(f"Старый фенотип: {old_phenotype}")
                     new_phenotype = invert_random_bit(old_phenotype)
                     print(f"Новый фенотип: {new_phenotype}")
-
                     first_individual_new_phenotypes[phenotype_ind] = new_phenotype
 
                     print(f"Фенотипы: {first_individual_new_phenotypes}")
 
+                    new_child_fitness = sum(
+                        check_intervals(intervals, first_individual_new, first_individual_new_phenotypes))
+
                     new_pokolenya_fitness.append(
                         sum(check_intervals(intervals, first_individual_new, first_individual_new_phenotypes)))
+
+                    if new_child_fitness < old_fitness:
+                        print(f"Старая приспособленность: {old_fitness}, новая: {new_child_fitness}")
+                        print(
+                            ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;ЗДЕСЬ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")
 
                     new_pokolenya.append(first_individual_new)
                     new_pokolenya_phenotypes.append(first_individual_new_phenotypes)
@@ -225,6 +255,8 @@ while counter < z:
 
                 for _ in range(2):
                     if random.randint(0, 100) <= Pm:
+                        old_fitness = sum(
+                            check_intervals(intervals, second_individual_new, second_individual_new_phenotypes))
                         phenotype_ind = random.randint(0, len(second_individual_new_phenotypes) - 1)
                         old_phenotype = second_individual_new_phenotypes[phenotype_ind]
                         print(f"Старый фенотип: {old_phenotype}")
@@ -235,11 +267,20 @@ while counter < z:
 
                         print(f"Фенотипы: {second_individual_new_phenotypes}")
 
+                        new_child_fitness = sum(
+                            check_intervals(intervals, second_individual_new, second_individual_new_phenotypes))
+
                         new_pokolenya_fitness.append(
-                            sum(check_intervals(intervals, second_individual_new, first_individual_new_phenotypes)))
+                            sum(check_intervals(intervals, second_individual_new, second_individual_new_phenotypes)))
+
+                        if new_child_fitness < old_fitness:
+                            print(f"Старая приспособленность: {old_fitness}, новая: {new_child_fitness}")
+
+                            print(
+                                ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;ЗДЕСЬ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")
 
                         new_pokolenya.append(second_individual_new)
-                        new_pokolenya_phenotypes.append(first_individual_new_phenotypes)
+                        new_pokolenya_phenotypes.append(second_individual_new_phenotypes)
 
                         # if sum(new_childrens) == best_individual:
                         #     counter += 1
@@ -254,15 +295,44 @@ while counter < z:
 
         else:
             print("############################КРОССОВЕР НЕ УДАЛСЯ############################")
+            print(f"Мутируем особь O{parents.index(first_individual) + 1}")
+            for _ in range(2):
+                if random.randint(0, 100) <= Pm:
+                    old_fitness = sum(
+                        check_intervals(intervals, first_individual, first_phenotypes))
+                    phenotype_ind = random.randint(0, len(first_phenotypes) - 1)
+                    old_phenotype = first_phenotypes[phenotype_ind]
+                    print(f"Старый фенотип: {old_phenotype}")
+                    new_phenotype = invert_random_bit(old_phenotype)
+                    print(f"Новый фенотип: {new_phenotype}")
+
+                    first_phenotypes[phenotype_ind] = new_phenotype
+
+                    print(f"Фенотипы: {first_phenotypes}")
+
+                    new_child_fitness = sum(
+                        check_intervals(intervals, first_individual, first_phenotypes))
 
 
+                    if new_child_fitness < old_fitness:
+                        print(f"Старая приспособленность: {old_fitness}, новая: {new_child_fitness}, мутация улучшила, идет в след поколение")
+
+                        print(
+                            ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;ЗДЕСЬ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")
+
+                        new_pokolenya.append(first_individual)
+                        new_pokolenya_phenotypes.append(first_phenotypes)
+                        new_pokolenya_fitness.append(
+                            sum(check_intervals(intervals, first_phenotypes, first_phenotypes)))
+                    else:
+                        print("Мутация не улучшила особь")
 
     new_pokolenya = new_pokolenya[0:k * 2]
     new_pokolenya_phenotypes = new_pokolenya_phenotypes[0:k * 2]
     new_pokolenya_fitness = new_pokolenya_fitness[0:k * 2]
 
     file.write(f"НОВЫЕ ПОКОЛЕНИЯ ДО СОРТИРОВКИ: {new_pokolenya}, кол-во: {len(new_pokolenya)}\n")
-
+    file.write(f"ПРИСПОСОБЛЕННОСТИ ДО СОРТИРОВКИ: {new_pokolenya_fitness}, кол-во: {len(new_pokolenya_fitness)}\n")
 
     for parent in parents:
         new_pokolenya.append(parent)
@@ -272,7 +342,6 @@ while counter < z:
 
     for fitness in parents_fitness:
         new_pokolenya_fitness.append(fitness)
-
 
     new_pokolenya, new_pokolenya_phenotypes, new_pokolenya_fitness = array_sort(new_pokolenya, new_pokolenya_phenotypes,
                                                                                 new_pokolenya_fitness)
