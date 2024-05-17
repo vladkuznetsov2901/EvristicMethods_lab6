@@ -11,7 +11,8 @@ def check_intervals(intervals, parents, parents_phenotype):
             if interval[0] <= parents_phenotype[i] <= interval[1]:
                 children_arr[j].append(parents[i])
         j += 1
-    print(children_arr)
+    for child in children_arr:
+        print(f"{child}, sum = {sum(child)}")
     _max_children = [0]
     for i in range(len(children_arr)):
         if sum(children_arr[i]) > sum(_max_children):
@@ -313,9 +314,9 @@ while counter < z:
                     new_child_fitness = sum(
                         check_intervals(intervals, first_individual, first_phenotypes))
 
-
                     if new_child_fitness < old_fitness:
-                        print(f"Старая приспособленность: {old_fitness}, новая: {new_child_fitness}, мутация улучшила, идет в след поколение")
+                        print(
+                            f"Старая приспособленность: {old_fitness}, новая: {new_child_fitness}, мутация улучшила, идет в след поколение")
 
                         print(
                             ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;ЗДЕСЬ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")
